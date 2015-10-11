@@ -1,0 +1,29 @@
+{
+  "name": "hotfoot",
+  "version": "0.1.0",
+  "description": "A utility for retrieving sprint information from a github repository.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "colors": "^1.1.2",
+    "github": "^0.2.4",
+    "mkdirp": "^0.5.1",
+    "nconf-jsonminify": "^0.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "github",
+    "sprint",
+    "velocity",
+    "metadata",
+    "labels",
+    "graph"
+  ],
+  "author": "Scott Johnson",
+  "license": "MPL-2.0"
+}
