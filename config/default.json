@@ -15,5 +15,13 @@
    *  - h:  hours
    *  - d:  days
    */
-  "refresh-timeout": "15m"
+  "refresh-timeout": "15m",
+
+  /**
+   * An authentication token for github.
+   *
+   * You can generate an authentication token for this app by visiting:
+   * https://github.com/settings/tokens
+   */
+  "github-auth-token": 'YOUR-AUTH-TOKEN'
 }
