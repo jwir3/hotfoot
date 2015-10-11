@@ -1,0 +1,19 @@
+{
+  /*
+   * The refresh period, along with a suffix indicating the time unit.
+   * default: 15 minutes
+   *
+   * The application uses this as a timeout to determine when to refresh data
+   * from github repositories. For a rapidly-evolving project, you'll probably
+   * want to set this lower. For a project that doesn't see a lot of changes,
+   * you can set this much higher.
+   *
+   * The time unit can be one of:
+   *  - ms: milliseconds
+   *  - s:  seconds
+   *  - m:  minutes
+   *  - h:  hours
+   *  - d:  days
+   */
+  "refresh-timeout": "15m"
+}
