@@ -110,11 +110,16 @@ function refresh() {
   // 1. Download the list of github issues (and PRs, if enabled) for the given
   //    repositories that have changed since the last refresh. These need to be
   //    processed, one at a time.
-  githubClient.refreshAllRepos(lastUpdate, function(err, data) {
-    if (err) {
-      logger.error(err);
-      return;
-    }
+  // githubClient.refreshAllRepos(lastUpdate, function(err, data) {
+  //   if (err) {
+  //     logger.error(err);
+  //     return;
+  //   }
+  // });
+
+
+  githubClient.getIssuesFromRepository(lastUpdate, 'jwir3', 'hotfoot', function(err, data) {
+    console.log("Saw: " + data.issues.length + " issues");
   });
 
   // Adjust the cache to indicate when the last refresh was.

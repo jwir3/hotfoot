@@ -60,12 +60,8 @@ HotfootGithubClient.prototype = {
   },
 
   getIssuesFromRepository: function(aLastUpdateTime, aUsername, aRepo, aCallback) {
-    var issuesAndLink = {
-      issues: [],
-      link: null
-    };
-
-    this._recursivelyMergeNextPageOfIssues(aLastUpdateTime, aUsername, aRepo, 0, issuesAndLink, aCallback);
+    var issues = [];
+    this._recursivelyMergeNextPageOfIssues(aLastUpdateTime, aUsername, aRepo, 0, issues, aCallback);
   },
 
   _recursivelyMergeNextPageOfIssues(aLastUpdateTime, aUsername, aRepo, aNextPage, aIssues, aCallback) {
@@ -77,8 +73,8 @@ HotfootGithubClient.prototype = {
         return;
       }
 
-      for (i = 0; i < data.issues.length; i++) {
-        issues.issues.push(data[i]);
+      for (i = 0; i < data.length; i++) {
+        issues.push(data[i]);
       }
 
       if (self._hasAdditionalPages()) {
@@ -101,22 +97,18 @@ HotfootGithubClient.prototype = {
       page: aPageNum,
       per_page: 100
     }, function (err, data) {
-      var returnedIssuesAndLink = {
-        issues: [],
-        link: null
-      };
-
       if (err) {
         aCallback(err, null);
         return;
       }
 
-      returnedIssuesAndLink.link = data.meta['link'];
+      var issues = [];
+
       for (index = 0; index < data.length; index++) {
-        returnedIssuesAndLink.issues.push(data[index]);
+        issues.push(data[index]);
       }
 
-      aCallback(null, returnedIssuesAndLink);
+      aCallback(null, issues);
     });
   }
 }

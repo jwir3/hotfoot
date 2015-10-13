@@ -93,8 +93,8 @@ describe('HotfootGithubClient', function() {
     it ('should return both issues in a repository with two issues without paging', function(done) {
       var githubClient = new HotfootGithubClient(['some/repo', 'another/repo'], '2');
       var lastUpdateTime = new Date().getTime();
-      githubClient._getPageOfIssuesFromRepository(lastUpdateTime, 'some', 'repo', 0, function(err, data) {
-        assert.equal(data.issues.length, 2);
+      githubClient._getPageOfIssuesFromRepository(lastUpdateTime, 'some', 'repo', 0, function(err, issues) {
+        assert.equal(issues.length, 2);
         assert(!githubClient._hasAdditionalPages());
         done();
       });
@@ -103,8 +103,8 @@ describe('HotfootGithubClient', function() {
     it ('should return that the repository has more pages after retrieval of the first page of issues', function(done) {
       var githubClient = new HotfootGithubClient(['some/repo'], '120');
       var lastUpdateTime = new Date().getTime();
-      githubClient._getPageOfIssuesFromRepository(lastUpdateTime, 'some', 'repo', 0, function(err, data) {
-        assert.equal(data.issues.length, 100);
+      githubClient._getPageOfIssuesFromRepository(lastUpdateTime, 'some', 'repo', 0, function(err, issues) {
+        assert.equal(issues.length, 100);
         assert(githubClient._hasAdditionalPages());
         done();
       });
@@ -114,7 +114,7 @@ describe('HotfootGithubClient', function() {
       var githubClient = new HotfootGithubClient(['some/repo'], '313');
       var lastUpdateTime = new Date().getTime();
       githubClient.getIssuesFromRepository(lastUpdateTime, 'some', 'repo', function(err, data) {
-        assert.equal(data.issues.length, 313);
+        assert.equal(data.length, 313);
         done();
       });
     });
