@@ -90,13 +90,22 @@ HotfootGithubClient.prototype = {
   },
 
   _getPageOfIssuesFromRepository: function(aLastUpdateTime, aUsername, aRepo, aPageNum, aCallback) {
-    this.mGithub.issues.repoIssues({
+    var lastUpdate;
+    var params = {
       user: aUsername,
       repo: aRepo,
       state: "all",
       page: aPageNum,
       per_page: 100
-    }, function (err, data) {
+    };
+
+    if (aLastUpdateTime) {
+      logger.debug("Last update time: " + aLastUpdateTime);
+      lastUpdate = new Date(Number(aLastUpdateTime));
+      params.since = lastUpdate.toISOString();
+    }
+
+    this.mGithub.issues.repoIssues(params, function (err, data) {
       if (err) {
         aCallback(err, null);
         return;

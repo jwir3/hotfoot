@@ -3,6 +3,7 @@ var mockery = require('mockery');
 var github = require('github');
 var fs = require('fs');
 var path = require('path');
+var logger = require('tracer').colorConsole();
 
 var HotfootGithubClient;
 
@@ -26,14 +27,15 @@ GithubMock.prototype = {
     repoIssues: function(params, callback) {
       var currentPage = params.page;
       var perPage = params.per_page;
-      var issues = createIssues(currentPage, perPage, Number(this.mAuthToken));
+      var since = params.since;
+      var issues = createIssues(currentPage, perPage, since, Number(this.mAuthToken));
       this.mHasMorePages = issues["meta"]["hasMorePages"];
       callback(null, issues);
     }
   }
 }
 
-function createIssues(aCurrentPage, aPerPage, aNumber) {
+function createIssues(aCurrentPage, aPerPage, aSince, aNumber) {
   var issuesTemplateString = fs.readFileSync(path.join(__dirname, '/data',
                                              'issue.json'), 'utf8');
 
@@ -43,6 +45,16 @@ function createIssues(aCurrentPage, aPerPage, aNumber) {
     // Clone the template object
     issuesArray.push(JSON.parse(JSON.stringify(issuesTemplate["0"])));
     issuesArray[i].number = i;
+
+    // Make all of the issues have a last updated date of 1444259586254, which is
+    // 2015-10-13T23:13:32.564Z, except the last one, which should have an update
+    // date of now.
+    issuesArray[i].updated_at = new Date(1444259586254).toISOString();
+
+    if (i == (aNumber - 1)) {
+      issuesArray[i].updated_at = new Date().toISOString();
+    }
+
     for (prop in issuesArray[i]) {
       if (issuesArray[i].hasOwnProperty(prop) && (typeof issuesArray[i][prop] == "string")) {
         issuesArray[i][prop] = issuesArray[i][prop].replace("{issueNum}", i);
@@ -52,6 +64,16 @@ function createIssues(aCurrentPage, aPerPage, aNumber) {
 
   var startIndex = 0 + (aPerPage*aCurrentPage);
   var endIndex = aPerPage + (aPerPage*aCurrentPage);
+  issuesArray = issuesArray.filter(function(element, index, array) {
+    if (!aSince) {
+      return true;
+    }
+
+    var sinceDate = Date.parse(aSince);
+    var issueUpdatedAt = Date.parse(element.updated_at);
+    return sinceDate < issueUpdatedAt;
+  });
+
   var hasMorePages = issuesArray.length > (aPerPage * (aCurrentPage+1));
   issuesArray = issuesArray.slice(startIndex, endIndex);
 
@@ -92,8 +114,7 @@ describe('HotfootGithubClient', function() {
 
     it ('should return both issues in a repository with two issues without paging', function(done) {
       var githubClient = new HotfootGithubClient(['some/repo', 'another/repo'], '2');
-      var lastUpdateTime = new Date().getTime();
-      githubClient._getPageOfIssuesFromRepository(lastUpdateTime, 'some', 'repo', 0, function(err, issues) {
+      githubClient._getPageOfIssuesFromRepository(null, 'some', 'repo', 0, function(err, issues) {
         assert.equal(issues.length, 2);
         assert(!githubClient._hasAdditionalPages());
         done();
@@ -102,8 +123,7 @@ describe('HotfootGithubClient', function() {
 
     it ('should return that the repository has more pages after retrieval of the first page of issues', function(done) {
       var githubClient = new HotfootGithubClient(['some/repo'], '120');
-      var lastUpdateTime = new Date().getTime();
-      githubClient._getPageOfIssuesFromRepository(lastUpdateTime, 'some', 'repo', 0, function(err, issues) {
+      githubClient._getPageOfIssuesFromRepository(null, 'some', 'repo', 0, function(err, issues) {
         assert.equal(issues.length, 100);
         assert(githubClient._hasAdditionalPages());
         done();
@@ -112,9 +132,17 @@ describe('HotfootGithubClient', function() {
 
     it ('should return all issues in a repository with 313 issues', function(done) {
       var githubClient = new HotfootGithubClient(['some/repo'], '313');
-      var lastUpdateTime = new Date().getTime();
-      githubClient.getIssuesFromRepository(lastUpdateTime, 'some', 'repo', function(err, data) {
+      githubClient.getIssuesFromRepository(null, 'some', 'repo', function(err, data) {
         assert.equal(data.length, 313);
+        done();
+      });
+    });
+
+    it ('should return one issue modified since 2015-10-13T23:13:32.564Z', function (done) {
+      var githubClient = new HotfootGithubClient(['some/repo'], '313');
+      var lastUpdateTime = new Date(1444259587254);
+      githubClient.getIssuesFromRepository(lastUpdateTime, 'some', 'repo', function(err, data) {
+        assert.equal(data.length, 1);
         done();
       });
     });

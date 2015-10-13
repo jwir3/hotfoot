@@ -99,12 +99,12 @@ function adjustCacheForLastUpdateTime() {
 
 function refresh() {
   var lastUpdate = getLastUpdateTime();
-  if (!lastUpdate) {
-    // This is an initial update, so we should just not do anything for now.
-    logger.debug("Initial update detected. Not performing refresh for this cycle.");
-    adjustCacheForLastUpdateTime();
-    return;
-  }
+  // if (!lastUpdate) {
+  //   // This is an initial update, so we should just not do anything for now.
+  //   logger.debug("Initial update detected. Not performing refresh for this cycle.");
+  //   adjustCacheForLastUpdateTime();
+  //   return;
+  // }
 
   // We want to perform the following on each refresh:
   // 1. Download the list of github issues (and PRs, if enabled) for the given
@@ -119,7 +119,7 @@ function refresh() {
 
 
   githubClient.getIssuesFromRepository(lastUpdate, 'jwir3', 'hotfoot', function(err, data) {
-    console.log("Saw: " + data.issues.length + " issues");
+    console.log("Saw: " + data.length + " issues");
   });
 
   // Adjust the cache to indicate when the last refresh was.
