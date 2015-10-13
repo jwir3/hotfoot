@@ -4,51 +4,39 @@ var fs = require('fs');
 var mkdirp = require('mkdirp');
 var conf = require('nconf-jsonminify');
 var GitHubAPI = require('github');
-var colors = require('colors');
+var url = require('url');
+var logger = require('tracer').colorConsole();
 
+var HotfootGithubClient = require('./hotfootgithubclient.js');
 var timespan = require('./timespan.js');
 
 var github;
+
+var githubClient;
 
 main();
 
 function main() {
   initConfig();
-  initGithub();
+  initGithubClient();
 
   var refreshTimeout = conf.get('refresh-timeout');
   if (!refreshTimeout) {
-      return console.error("ERROR:".red + " You need to provide a 'refresh-timeout' specification in your configuration file");
+      return logger.error("You need to provide a 'refresh-timeout' specification in your configuration file");
   }
 
   var refreshTimeoutMs = timespan.getTimeSpanInMs(refreshTimeout);
   initializeRefreshLoop(refreshTimeoutMs);
 }
 
-function initGithub() {
-  github = new GitHubAPI({
-   // required
-   version: "3.0.0",
-   // optional
-   debug: true,
-   protocol: "https",
-   host: "api.github.com", // should be api.github.com for GitHub
-   pathPrefix: "", // for some GHEs; none for GitHub
-   timeout: 5000,
-   headers: {
-       "user-agent": "hotfoot/0.1.0" // GitHub is happy with a unique user agent
-   }
-   });
-
-   var userToken = conf.get('github-auth-token');
-   if (!userToken) {
-       return console.error("WARN:".yellow + " No github authentication token was specified in your config file. We won't be able to do much!");
-   }
-
-   github.authenticate({
-     type: 'token',
-     token: userToken
-   });
+function initGithubClient() {
+  var repositories = conf.get('repositories');
+  var userToken = conf.get('github-auth-token');
+  if (!userToken) {
+    logger.warn("No github authentication token was specified in your config file. You won't be able to view private repositories.");
+  } else {
+    githubClient = new HotfootGithubClient(repositories, userToken);
+  }
 }
 
 function initConfig() {
@@ -82,22 +70,64 @@ function verifyConfigDirCreated() {
   }
 }
 
+function getCacheDirPath() {
+  return path.join(os.homedir(), '.hotfoot', 'cache');
+}
+
+function getLastUpdateTime() {
+  var lastupdate = undefined;
+  var cachePath = getCacheDirPath();
+  try {
+    return fs.readFileSync(path.join(cachePath, 'lastupdate'));
+  } catch (err) {
+    return undefined;
+  }
+}
+
+function adjustCacheForLastUpdateTime() {
+  var now = new Date();
+
+  var cachePath = getCacheDirPath();
+  try {
+    fs.accessSync(cachePath);
+  } catch (err) {
+    mkdirp.sync(cachePath);
+  }
+
+  fs.writeFileSync(path.join(getCacheDirPath(), 'lastupdate'), now.getTime());
+}
+
 function refresh() {
+  var lastUpdate = getLastUpdateTime();
+  if (!lastUpdate) {
+    // This is an initial update, so we should just not do anything for now.
+    logger.debug("Initial update detected. Not performing refresh for this cycle.");
+    adjustCacheForLastUpdateTime();
+    return;
+  }
+
   // We want to perform the following on each refresh:
   // 1. Download the list of github issues (and PRs, if enabled) for the given
   //    repositories that have changed since the last refresh. These need to be
   //    processed, one at a time.
-  // github.repos.getAll({}, function (err, data) {
-  //   if (err) {
-  //     return console.error("ERROR".red, err);
-  //   }
-  //
-  //   for (index in data) {
-  //     var object = data[index];
-  //     console.log(object.full_name);
-  //   }
-  // });
+  githubClient.refreshAllRepos(lastUpdate, function(err, data) {
+    if (err) {
+      logger.error(err);
+      return;
+    }
+  });
+
+  // Adjust the cache to indicate when the last refresh was.
+  adjustCacheForLastUpdateTime();
 }
+
+// function processIssuesInRepository(aUserName, aRepoName) {
+//   logger.debug("Refreshing repository: " + aUserName + "/" + aRepoName);
+//   processSinglePageOfIssuesInRepository(aUserName, aRepoName,
+//     function(err, aLinkHeader) {
+//       logger.debug("Saw link header: " + aLinkHeader);
+//   });
+// }
 
 function initializeRefreshLoop(aTimeSpanMs) {
   refresh();

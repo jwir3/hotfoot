@@ -23,5 +23,14 @@
    * You can generate an authentication token for this app by visiting:
    * https://github.com/settings/tokens
    */
-  "github-auth-token": 'YOUR-AUTH-TOKEN'
+  "github-auth-token": 'YOUR-AUTH-TOKEN',
+
+  /**
+   * A list of repositories to look at for information.
+   *
+   * These can be public or private repositories, but if they are private, then
+   * the retrieval method will fail unless an authentication token is provided
+   * above.
+   */
+  "repositories": ["jwir3/hotfoot"]
 }

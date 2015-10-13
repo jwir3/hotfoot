@@ -10,9 +10,14 @@
     "colors": "^1.1.2",
     "github": "^0.2.4",
     "mkdirp": "^0.5.1",
-    "nconf-jsonminify": "^0.1.1"
+    "nconf-jsonminify": "^0.1.1",
+    "tracer": "^0.8.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "mocha": "^2.3.3",
+    "mockery": "^1.4.0",
+    "sinon": "^1.17.1"
+  },
   "scripts": {
     "test": "mocha"
   },
@@ -25,5 +30,13 @@
     "graph"
   ],
   "author": "Scott Johnson",
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jwir3/hotfoot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jwir3/hotfoot/issues"
+  },
+  "homepage": "https://github.com/jwir3/hotfoot#readme"
 }
