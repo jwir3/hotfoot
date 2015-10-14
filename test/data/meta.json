@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4989",
+    "x-ratelimit-reset": "1444685756",
+    "x-oauth-scopes": "repo",
+    "etag": "76a82e592e2d8917f0b14c47aff168f1",
+    "status": "200 OK"
+  }
+}

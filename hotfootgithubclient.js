@@ -36,7 +36,6 @@ HotfootGithubClient.prototype = {
 
   refreshAllRepos: function(aUpdateTime, aCompletedCallback) {
     var lastUpdate = new Date(Number(aUpdateTime));
-    logger.debug("Last update was at: " + lastUpdate.toString());
     var reposRefreshed = [];
 
     for (index in this.mRepos) {
@@ -62,6 +61,14 @@ HotfootGithubClient.prototype = {
   getIssuesFromRepository: function(aLastUpdateTime, aUsername, aRepo, aCallback) {
     var issues = [];
     this._recursivelyMergeNextPageOfIssues(aLastUpdateTime, aUsername, aRepo, 0, issues, aCallback);
+  },
+
+  _isPullRequest: function(aIssue) {
+    if (aIssue.pull_request) {
+      return true;
+    }
+
+    return false;
   },
 
   _recursivelyMergeNextPageOfIssues(aLastUpdateTime, aUsername, aRepo, aNextPage, aIssues, aCallback) {
@@ -100,7 +107,6 @@ HotfootGithubClient.prototype = {
     };
 
     if (aLastUpdateTime) {
-      logger.debug("Last update time: " + aLastUpdateTime);
       lastUpdate = new Date(Number(aLastUpdateTime));
       params.since = lastUpdate.toISOString();
     }
